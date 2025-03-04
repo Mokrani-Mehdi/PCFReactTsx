@@ -1,6 +1,8 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as React from "react";
 import { WorkforceDisplay} from "./DisplayReactComponent";
+//import {WorkforceDisplay} from "./WorkFoceDisplay"
+//import {WorkforceDisplay} from "./OldDisplay"
 
 import { Shift } from "./Models/DisplayReactComponentModels";
 import { IWorkforceDisplayProps } from "./Interfaces/DisplayReactComponentInterface";
@@ -35,12 +37,14 @@ export class HermesPlanning2 implements ComponentFramework.ReactControl<IInputs,
         this.notifyOutputChanged = notifyOutputChanged;
     }
 
-    private setState = (newState: Partial<IState>): void => {
+    private setState = (newState: Partial<IState> ,notify: boolean = false): void => {
         this.state = {
             ...this.state,
             ...newState
         };
-        this.notifyOutputChanged();
+        if (notify) {
+            this.notifyOutputChanged();
+        }
     };
 
     private handleWorkerSelect = (workerId: string): void => {
@@ -49,14 +53,14 @@ export class HermesPlanning2 implements ComponentFramework.ReactControl<IInputs,
             selectedShift: null,
             responseData: null,
             isFromValidation: false
-        });
+        }, false);
     };
 
     private HandlePayloadUpdate = (updatedShifts: Shift[]): void => {
         this.setState({
             responseData: updatedShifts,
             isFromValidation: true
-        });
+        }, true); //
     };
 
     private handleShiftSelect = (workerId: string, shift: Shift): void => {
@@ -65,19 +69,23 @@ export class HermesPlanning2 implements ComponentFramework.ReactControl<IInputs,
             selectedShift: shift,
             responseData: null,
             isFromValidation: false
-        });
+        }, false);
     };
     public updateView(context: ComponentFramework.Context<IInputs>): React.ReactElement {
         let workforceData;
 
-    try {
-        workforceData = context.parameters.Payload.raw
-            ? (JSON.parse(context.parameters.Payload.raw) ) 
-            : workforceJson  ;
-    } catch (error) {
-        console.error("Error parsing JSON:", error);
-        workforceData = workforceJson  ;
+  try {
+    if (context.parameters.Payload.raw && typeof context.parameters.Payload.raw === "string") {
+        console.log("Parsing JSON:", context.parameters.Payload.raw);
+        workforceData = JSON.parse(context.parameters.Payload.raw);
+    } else {
+        console.warn("Payload.raw is empty or not a string, using default workforceJson");
+        workforceData = workforceJson;
     }
+} catch (error) {
+    console.error("Error parsing JSON:", error, context.parameters.Payload.raw);
+    workforceData = workforceJson;
+}
 
     const props: IWorkforceDisplayProps = {
         workforceData,

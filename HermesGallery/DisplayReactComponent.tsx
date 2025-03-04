@@ -4,6 +4,9 @@ import "./DisplayReactComponent.css";
 import { Shift } from "./Models/DisplayReactComponentModels";
 import { IWorkforceDisplayProps } from "./Interfaces/DisplayReactComponentInterface";
 import Select from "react-select";
+import ShiftModal from "./Components/ShiftModalProps";
+import ShiftModalOptimized from "./Components/OptimizedShift";
+
 const EmptyStateMessage = () => (
   <div className="empty-state flex flex-col items-center justify-center p-8 text-center">
     <h3 className="text-lg font-medium text-gray-700 mb-2">
@@ -14,6 +17,7 @@ const EmptyStateMessage = () => (
     </p>
   </div>
 );
+
 const getDatesInRange = (startDate: string, endDate: string): Date[] => {
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -27,6 +31,7 @@ const getDatesInRange = (startDate: string, endDate: string): Date[] => {
 
   return dates;
 };
+
 export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
   workforceData,
   onWorkerSelect,
@@ -36,8 +41,7 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
   onValidate,
 }) => {
   const [localWorkforceData, setLocalWorkforceData] = useState(workforceData);
-  const [FirstWorkforceData, setFirstLocalWorkforceData] =
-    useState(workforceData);
+  const [FirstWorkforceData, setFirstLocalWorkforceData] = useState(workforceData);
   const [DepartementData, setDepartementData] = useState(
     workforceData?.departmentSkillsLists
   );
@@ -45,24 +49,30 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
   const [selectedWorker, setSelectedWorker] = useState<string | null>(null);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [isCreateMode, setIsCreateMode] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [selectedSkill, setSelectedSkill] = useState<string>("");
   const [updatedShifts, setUpdatedShifts] = useState<Shift[]>([]);
-  const [originalDepartment, setOriginalDepartment] = useState<string>("");
-  const [originalSkill, setOriginalSkill] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [DepartmentDropDownSelected, SetDepartmentDropDownSelected] =
-    useState<string>("");
-  const [SkillDropDownSelected, SetSkillDropDownSelected] =
-    useState<string>("");
+  const [deletedShifts, setDeletedShifts] = useState<string[]>([]);
+  const [DepartmentDropDownSelected, SetDepartmentDropDownSelected] = useState<string>("");
+  const [SkillDropDownSelected, SetSkillDropDownSelected] = useState<string>("");
+  const [anyDeletedShift, SetanyDeletedShift] = useState(false);
+
   const isPayloadChange = useRef(false);
+  
   const isValidData = React.useMemo(() => {
     return (
       localWorkforceData?.workforces?.length > 0 &&
       localWorkforceData?.departmentSkillsLists?.length > 0
     );
   }, [localWorkforceData]);
+  useEffect(() =>{
+    if(updatedShifts != null){
+      SetanyDeletedShift(updatedShifts.some(e => e.isDeleted == true)) 
+    }
+console.log(anyDeletedShift);
+  },[updatedShifts]);
   useEffect(() => {
     const currentDataStr = JSON.stringify(FirstWorkforceData);
     const newDataStr = JSON.stringify(workforceData);
@@ -73,18 +83,18 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
       setFirstLocalWorkforceData(workforceData);
       setDepartementData(workforceData?.departmentSkillsLists);
       setUpdatedShifts([]);
+      setDeletedShifts([]);
       setSelectedWorker(null);
       setSelectedShift(null);
       setIsPopupOpen(false);
-      setSelectedDepartment("");
-      setSelectedSkill("");
-      setOriginalDepartment("");
-      setOriginalSkill("");
+      setIsCreateMode(false);
+      setSelectedDate(null);
       setSearchQuery("");
       SetDepartmentDropDownSelected("");
       SetSkillDropDownSelected("");
     }
   }, [workforceData]);
+  
   const datesInRange =
     localWorkforceData?.planningSchedule != null
       ? getDatesInRange(
@@ -93,35 +103,81 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
         )
       : [];
 
-  const handleShiftClick = (workerId: string, shift: Shift | null) => {
+  const handleShiftClick = (workerId: string, shift: Shift | null, date: Date) => {
+    setSelectedWorker(workerId);
+    
     if (shift) {
-      isPayloadChange.current = false;
-      const currentShift = getUpdatedShift(workerId, shift);
-      setSelectedShift(currentShift);
-      setSelectedWorker(workerId);
-      setIsPopupOpen(true);
+      // Existing shift click
+      const isDeleted = deletedShifts.includes(shift.ava_planningdetailsid);
 
-      const department = DepartementData.find(
-        (dept) =>
-          dept.Departementid === currentShift.DepartmentId ||
-          dept.HexColor === currentShift.ava_departmentcolor
-      );
-      if (department) {
-        setSelectedDepartment(department.Departementid);
-        setOriginalDepartment(department.Departementid);
-
-        if (shift.SkillId) {
-          setSelectedSkill(shift.SkillId);
-          setOriginalSkill(shift.SkillId);
-        } else {
-          setSelectedSkill("");
-          setOriginalSkill("");
-        }
+      if (isDeleted) {
+        // Treat deleted shift as create mode but with existing planning ID
+        setSelectedShift({
+          ...shift,
+          isDeleted: true
+        });
+        setSelectedDate(date);
+        setIsCreateMode(true);
+        setIsPopupOpen(true);
+      } else {
+        // Regular shift update mode
+        isPayloadChange.current = false;
+        const currentShift = getUpdatedShift(workerId, shift);
+        setSelectedShift(currentShift);
+        setIsCreateMode(false);
+        setIsPopupOpen(true);
+        onShiftSelect?.(workerId, shift);
       }
-
-      onShiftSelect?.(workerId, shift);
+    } else {
+      // Empty shift click - create mode
+      setSelectedShift(null);
+      setSelectedDate(date);
+      setIsCreateMode(true);
+      setIsPopupOpen(true);
     }
   };
+
+  const handleDeleteShift = (e: React.MouseEvent, workerId: string, shift: Shift) => {
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this shift?")) {
+      // Add to deleted shifts list
+      setDeletedShifts((prev) => [...prev, shift.ava_planningdetailsid]);
+      
+      // Create a minimal deleted shift object
+      const deletedShiftData: Shift = {
+        ava_planningdetailsid: shift.ava_planningdetailsid,
+        ava_shiftday: shift.ava_shiftday,
+        isDeleted: true
+      } as Shift;
+
+      // Update the local workforce data - keep the shift but mark it as deleted
+      const updatedWorkforces = localWorkforceData.workforces.map((workforce) => {
+        if (workforce.ava_name === workerId) {
+          return {
+            ...workforce,
+            Shifts: workforce.Shifts.map((s) => 
+              s.ava_planningdetailsid === shift.ava_planningdetailsid
+                ? deletedShiftData
+                : s
+            ),
+          };
+        }
+        return workforce;
+      });
+
+      setLocalWorkforceData({
+        ...localWorkforceData,
+        workforces: updatedWorkforces,
+      });
+      
+      // Add to updatedShifts with isDeleted flag
+       setUpdatedShifts((prev) => [
+        ...prev.filter((s) => s.ava_planningdetailsid !== shift.ava_planningdetailsid),
+        deletedShiftData
+      ]);
+    }
+  };
+  
   const getUpdatedShift = (workerId: string, shiftToFind: Shift): Shift => {
     const updatedShift = updatedShifts.find(
       (shift) =>
@@ -130,6 +186,7 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
 
     return updatedShift || shiftToFind;
   };
+  
   const filteredWorkforces = React.useMemo(() => {
     if (!isValidData) return [];
     return localWorkforceData.workforces.filter((workforce) => {
@@ -137,18 +194,16 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
 
-        const departmentMatches =
+      const departmentMatches =
         selectedDepartments.length === 0 ||
         (workforce.Departments != null &&
           workforce.Departments.some((dept) =>
             selectedDepartments.includes(dept.Id)
           ));
 
-      return (
-        nameMatches && (departmentMatches )
-      );
+      return nameMatches && departmentMatches;
       
-    }).sort((a, b) => a.ava_name.localeCompare(b.ava_name));;
+    }).sort((a, b) => a.ava_name.localeCompare(b.ava_name));
   }, [
     localWorkforceData,
     searchQuery,
@@ -158,21 +213,27 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
   ]);
 
   const handleOnValidate = () => {
+    // Include deleted shifts in the validation
+    /*const allUpdates = [
+      ...updatedShifts,
+      ...deletedShifts.map(id => ({ ava_planningdetailsid: id, isDeleted: true }))
+    ];*/
     onValidate?.(updatedShifts);
   };
+  
   const maxShifts = React.useMemo(() => {
     if (!isValidData || filteredWorkforces.length === 0) return 0;
     return Math.max(
       ...filteredWorkforces.map((person) => person.Shifts?.length || 0)
     );
   }, [filteredWorkforces, isValidData]);
+  
   const handleClosePopup = () => {
     setIsPopupOpen(false);
-    setSelectedDepartment("");
-    setSelectedSkill("");
-    setOriginalDepartment("");
-    setOriginalSkill("");
+    setIsCreateMode(false);
+    setSelectedDate(null);
   };
+  
   useEffect(() => {
     if (maxShifts > 0) {
       document.documentElement.style.setProperty(
@@ -181,57 +242,15 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
       );
     }
   }, [maxShifts]);
-  const handleDepartmentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedDepartment(e.target.value);
-    setSelectedSkill("");
-  };
 
   const handleOnClear = () => {
     setLocalWorkforceData(workforceData);
     setFirstLocalWorkforceData(workforceData);
     setUpdatedShifts([]);
+    setDeletedShifts([]);
   };
 
-  const getSkillsForDepartment = (departmentId: string) => {
-    const department = DepartementData.find(
-      (dept) => dept.Departementid === departmentId
-    );
-    return department?.Skills || [];
-  };
-
-  const isShiftModified = (): boolean => {
-    const departmentChanged = selectedDepartment !== originalDepartment;
-    const skillChanged = selectedSkill !== originalSkill;
-    return departmentChanged || skillChanged;
-  };
-  const handleConfirm = () => {
-    if (!selectedShift || !selectedWorker || !selectedDepartment) return;
-
-    if (!isShiftModified()) {
-      handleClosePopup();
-      return;
-    }
-    DepartementData;
-    const selectedDepartmentData = DepartementData.find(
-      (dept) => dept.Departementid === selectedDepartment
-    );
-
-    if (!selectedDepartmentData) return;
-    const selectedSkillData = selectedSkill
-      ? selectedDepartmentData.Skills.find(
-          (skill) => skill.SkillId === selectedSkill
-        )
-      : null;
-    const updatedShift = {
-      ...selectedShift,
-      ava_departmentcolor: selectedDepartmentData.HexColor,
-      DepartmentId: selectedDepartment,
-      SkillId: selectedSkill || undefined,
-      SkillName: selectedSkillData ? selectedSkillData.Name : undefined,
-      DepartmentName: selectedDepartmentData.DepartmentName,
-      isEdited: true,
-    };
-
+  const handleShiftUpdate = (updatedShift: Shift) => {
     setUpdatedShifts((prev) => {
       const existingIndex = prev.findIndex(
         (shift) =>
@@ -250,7 +269,7 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
         return {
           ...workforce,
           Shifts: workforce.Shifts.map((shift) =>
-            shift.ava_planningdetailsid === selectedShift.ava_planningdetailsid
+            shift.ava_planningdetailsid === updatedShift.ava_planningdetailsid
               ? updatedShift
               : shift
           ),
@@ -264,17 +283,89 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
       workforces: updatedWorkforces,
     });
 
-    handleClosePopup();
+    setIsPopupOpen(false);
+  };
+
+  const handleCreateShift = (newShift: Shift) => {
+    // Check if this is a "restoration" of a deleted shift
+    if (selectedShift && selectedShift.isDeleted) {
+      // Use the existing planning ID 
+      const restoredShift = {
+        ...newShift,
+        ava_planningdetailsid: selectedShift.ava_planningdetailsid,
+        isDeleted: false,
+        isEdited: true
+      };
+      
+      // Remove from deleted shifts list
+      setDeletedShifts((prev) => 
+        prev.filter(id => id !== selectedShift.ava_planningdetailsid)
+      );
+      
+      // Update shifts list
+      setUpdatedShifts((prev) => {
+        const existingIndex = prev.findIndex(
+          (shift) => shift.ava_planningdetailsid === selectedShift.ava_planningdetailsid
+        );
+        if (existingIndex >= 0) {
+          const newShifts = [...prev];
+          newShifts[existingIndex] = restoredShift;
+          return newShifts;
+        }
+        return [...prev, restoredShift];
+      });
+      
+      // Update workforce data
+      const updatedWorkforces = localWorkforceData.workforces.map((workforce) => {
+        if (workforce.ava_name === selectedWorker) {
+          return {
+            ...workforce,
+            Shifts: workforce.Shifts.map((shift) =>
+              shift.ava_planningdetailsid === selectedShift.ava_planningdetailsid
+                ? restoredShift
+                : shift
+            ),
+          };
+        }
+        return workforce;
+      });
+      
+      setLocalWorkforceData({
+        ...localWorkforceData,
+        workforces: updatedWorkforces,
+      });
+    } else {
+      // Regular new shift
+      setUpdatedShifts((prev) => [...prev, newShift]);
+
+      // Update the workforce data with the new shift
+      const updatedWorkforces = localWorkforceData.workforces.map((workforce) => {
+        if (workforce.ava_name === selectedWorker) {
+          return {
+            ...workforce,
+            Shifts: [...workforce.Shifts, newShift],
+          };
+        }
+        return workforce;
+      });
+
+      setLocalWorkforceData({
+        ...localWorkforceData,
+        workforces: updatedWorkforces,
+      });
+    }
+
+    setIsPopupOpen(false);
+    setIsCreateMode(false);
+    setSelectedDate(null);
   };
 
   if (!isValidData) {
     return <EmptyStateMessage />;
   }
 
-  const handleDropDownSelection = () => {};
   return (
     <div className="scrollable-table-wrapper">
-     
       <div className="header-container">
         <div className="search-container">
           <input
@@ -285,32 +376,24 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
             className="search-input"
           />
         </div>
-        {/*<div className="material-multi-select">
-<div className="selected-items">
-<div>
- {DepartementData.map( e => <label><input type="checkbox" value={e.Departementid} /> {e.DepartmentName}</label>)}
-
-</div>
-</div>
-        </div>*/}
         <div className="DropDown-Department-container">
-        <Select className="material-dropdown"
-  options={DepartementData.map((dept) => ({
-    value: dept.Departementid,
-    label: dept.DepartmentName,
-  }))}
-  isMulti
-  value={DepartementData.filter((dept) =>
-    selectedDepartments.includes(dept.Departementid)
-  ).map((dept) => ({
-    value: dept.Departementid,
-    label: dept.DepartmentName,
-  }))}
-  onChange={(selectedOptions) => {
-    setSelectedDepartments(selectedOptions.map((option) => option.value));
-  }}
-/>
-         
+          <Select className="material-dropdown"
+            options={DepartementData.map((dept) => ({
+              value: dept.Departementid,
+              label: dept.DepartmentName,
+            }))}
+            isMulti
+            placeholder = "Department"
+            value={DepartementData.filter((dept) =>
+              selectedDepartments.includes(dept.Departementid)
+            ).map((dept) => ({
+              value: dept.Departementid,
+              label: dept.DepartmentName,
+            }))}
+            onChange={(selectedOptions) => {
+              setSelectedDepartments(selectedOptions.map((option) => option.value));
+            }}
+          />
         </div>
         <div className="clear-button-container">
           <button className="clear-button" onClick={handleOnClear}>
@@ -318,7 +401,7 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
           </button>
         </div>
         <div className="validate-button-container">
-          <button className="validate-button" onClick={handleOnValidate}>
+          <button className="validate-button"   onClick={handleOnValidate} disabled = {anyDeletedShift} >
             Validate
           </button>
         </div>
@@ -364,6 +447,10 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
                       new Date(s.ava_shiftday || "").getDate() ===
                       date.getDate()
                   );
+                  
+                  // Check if this shift is in the deleted list
+                  const isDeleted = shift && deletedShifts.includes(shift.ava_planningdetailsid);
+                  
                   return (
                     <td
                       key={index}
@@ -374,43 +461,71 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
                           ? "divider"
                           : ""
                       }
+                      onClick={() => {
+                        if (shift && isDeleted) {
+                          // If shift is deleted, allow clicking the cell to recreate it
+                          handleShiftClick(person.ava_name, shift, date);
+                        } else if (!shift) {
+                          // Regular create mode for empty cells
+                          handleShiftClick(person.ava_name, null, date);
+                        }
+                      }}
                     >
                       <div className="cell-container">
-                        <div className="tooltip">
-                          <button
-                            className="shift-button"
-                            style={{
-                              backgroundColor:
-                                shift?.ava_departmentcolor || "#696969",
-                            }}
-                            onClick={() =>
-                              handleShiftClick(person.ava_name, shift || null)
-                            }
-                          >
-                            {shift?.ava_isassigned
-                              ? `${shift.ava_SpecificScheduleName || "E"}`
-                              : ""}
-                          </button>
-                          {shift && (
-                            <span className="tooltiptext">
-                              {shift.ava_isassigned
-                                ? `${shift.ava_shiftday || "Unknown Day"}
-                          ${person.ava_name}
-                          ${shift.DepartmentName}
-                          ${shift.SkillName}
-                          Lunch Break: ${shift.ava_lunchtimeStart} - ${
-                                    shift.ava_lunchtimeEnd
-                                  }
-                          Schedule: ${shift.ava_SpecificScheduleStart} - ${
-                                    shift.ava_SpecificScheduleEnd
-                                  }`
-                                : `${
-                                    shift.ava_absencereasonName ||
-                                    "Unknown Break"
-                                  }`}
-                            </span>
-                          )}
-                        </div>
+                        {shift ? (
+                          isDeleted ? (
+                            // Deleted shift appearance
+                            <div className="empty-shift deleted-shift">
+                              <span className="add-shift-icon" title="Recreate Shift">+</span>
+                            </div>
+                          ) : (
+                            // Normal shift appearance
+                            <div className="tooltip shift-container">
+                              <button
+                                className="shift-button"
+                                style={{
+                                  backgroundColor:
+                                    shift?.ava_departmentcolor || "#696969",
+                                }}
+                                onClick={() =>
+                                  handleShiftClick(person.ava_name, shift, date)
+                                }
+                              >
+                                {shift?.ava_isassigned
+                                  ? `${shift.ava_SpecificScheduleName || "E"}`
+                                  : ""}
+                              </button>
+                              <span 
+                                className="delete-shift-icon" 
+                                onClick={(e) => handleDeleteShift(e, person.ava_name, shift)}
+                                title="Delete Shift"
+                              >
+                                ✕
+                              </span>
+                              <span className="tooltiptext">
+                                {shift.ava_isassigned
+                                  ? `${shift.ava_shiftday || "Unknown Day"}
+                              ${person.ava_name}
+                              ${shift.DepartmentName}
+                              ${shift.SkillName}
+                              Lunch Break: ${shift.ava_lunchtimeStart} - ${
+                                        shift.ava_lunchtimeEnd
+                                      }
+                              Schedule: ${shift.ava_SpecificScheduleStart} - ${
+                                        shift.ava_SpecificScheduleEnd
+                                      }`
+                                    : `${
+                                        shift.ava_absencereasonName ||
+                                        "Unknown Break"
+                                      }`}
+                              </span>
+                            </div>
+                          )
+                        ) : (
+                          <div className="empty-shift">
+                            <span className="add-shift-icon" title="Add Shift">+</span>
+                          </div>
+                        )}
                       </div>
                     </td>
                   );
@@ -424,70 +539,19 @@ export const WorkforceDisplay: React.FC<IWorkforceDisplayProps> = ({
           <span>No staff members found matching your search.</span>
         </div>
       )}
-      {isPopupOpen && (
-        <div className="modal-overlay" onClick={handleClosePopup}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">Shift Details</div>
-            <div className="form-group">
-              <label className="form-label">Staff member</label>
-              <input
-                type="text"
-                value={selectedWorker || ""}
-                readOnly
-                className="form-control"
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Date</label>
-              <input
-                type="text"
-                value={selectedShift?.ava_shiftday || ""}
-                readOnly
-                className="form-control"
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Department</label>
-              <select
-                className="form-select"
-                value={selectedDepartment}
-                onChange={handleDepartmentChange}
-              >
-                <option value="">Select Department</option>
-                {DepartementData.map((dept) => (
-                  <option key={dept.Departementid} value={dept.Departementid}>
-                    {dept.DepartmentName}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Skill</label>
-              <select
-                className="form-select"
-                value={selectedSkill}
-                onChange={(e) => setSelectedSkill(e.target.value)}
-                disabled={!selectedDepartment}
-              >
-                <option value="">Select Skill</option>
-                {getSkillsForDepartment(selectedDepartment).map((skill) => (
-                  <option key={skill.SkillId} value={skill.SkillId}>
-                    {skill.Name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-cancel" onClick={handleClosePopup}>
-                Cancel
-              </button>
-              <button className="btn btn-confirm" onClick={handleConfirm}>
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
+      {/* Using the ShiftModal component with support for create mode */}
+      <ShiftModal
+        isOpen={isPopupOpen}
+        selectedWorker={selectedWorker}
+        selectedShift={selectedShift}
+        departmentData={DepartementData}
+        isCreateMode={isCreateMode}
+        selectedDate={selectedDate}
+        onClose={handleClosePopup}
+        onConfirm={handleShiftUpdate}
+        onCreateShift={handleCreateShift}
+      />
     </div>
   );
 };
