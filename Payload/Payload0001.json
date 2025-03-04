@@ -1,0 +1,146 @@
+{
+    "workforces": [],
+    "departmentSkillsLists": [
+        {
+            "DepartmentName": "Accueil Sevre",
+            "Departementid": "95c42473-31c4-ef11-a72f-002248da8aa2",
+            "HexColor": "#e8f2d1",
+            "Skills": [
+                {
+                    "Name": "H0 Sevre",
+                    "SkillId": "b666eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "H-1 Sevre",
+                    "SkillId": "b866eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Hline Sevre",
+                    "SkillId": "ba66eb9c-31c4-ef11-a72f-002248da8aa2"
+                }
+            ]
+        },
+        {
+            "DepartmentName": "Caisse Sevre",
+            "Departementid": "97c42473-31c4-ef11-a72f-002248da8aa2",
+            "HexColor": "#dcd3e5",
+            "Skills": [
+                {
+                    "Name": "Caisse Sevre sevre",
+                    "SkillId": "b266eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Management - Test Sev Sevre",
+                    "SkillId": "be66eb9c-31c4-ef11-a72f-002248da8aa2"
+                }
+            ]
+        },
+        {
+            "DepartmentName": "HLINE Sevre",
+            "Departementid": "99c42473-31c4-ef11-a72f-002248da8aa2",
+            "HexColor": "#ffd9d9",
+            "Skills": [
+                {
+                    "Name": "Hline1 Sevre",
+                    "SkillId": "bc66eb9c-31c4-ef11-a72f-002248da8aa2"
+                }
+            ]
+        },
+        {
+            "DepartmentName": "Managers Sevre",
+            "Departementid": "9bc42473-31c4-ef11-a72f-002248da8aa2",
+            "HexColor": "#eceff0",
+            "Skills": [
+                {
+                    "Name": "Manager Sevre",
+                    "SkillId": "c066eb9c-31c4-ef11-a72f-002248da8aa2"
+                }
+            ]
+        },
+        {
+            "DepartmentName": "Plateau H0 Sevre",
+            "Departementid": "9dc42473-31c4-ef11-a72f-002248da8aa2",
+            "HexColor": "#ccdce8",
+            "Skills": [
+                {
+                    "Name": "Référent 8 Sevre",
+                    "SkillId": "c266eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Référent F Sevre",
+                    "SkillId": "c866eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Référent IDO Sevre",
+                    "SkillId": "ca66eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Référent S Sevre",
+                    "SkillId": "d066eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Référent V Sevre",
+                    "SkillId": "d266eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Vente1 Sevre",
+                    "SkillId": "dc66eb9c-31c4-ef11-a72f-002248da8aa2"
+                }
+            ]
+        },
+        {
+            "DepartmentName": "Plateau H-1 Sevre",
+            "Departementid": "9fc42473-31c4-ef11-a72f-002248da8aa2",
+            "HexColor": "#ffeeda",
+            "Skills": [
+                {
+                    "Name": "Référent B Sevre",
+                    "SkillId": "c466eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Référent C Sevre",
+                    "SkillId": "c666eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Référent M Sevre",
+                    "SkillId": "cc66eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Référent PAP Sevre",
+                    "SkillId": "ce66eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Référent Z Sevre",
+                    "SkillId": "d466eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Vente Sevre",
+                    "SkillId": "da66eb9c-31c4-ef11-a72f-002248da8aa2"
+                }
+            ]
+        },
+        {
+            "DepartmentName": "Support commercial Sevre",
+            "Departementid": "a1c42473-31c4-ef11-a72f-002248da8aa2",
+            "HexColor": "#e6e4f8",
+            "Skills": [
+                {
+                    "Name": "Caisse Sevre",
+                    "SkillId": "b066eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Encaissement et administration Sevre",
+                    "SkillId": "b466eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "SAV Sevre",
+                    "SkillId": "d666eb9c-31c4-ef11-a72f-002248da8aa2"
+                },
+                {
+                    "Name": "Services aux clients Sevre",
+                    "SkillId": "d866eb9c-31c4-ef11-a72f-002248da8aa2"
+                }
+            ]
+        }
+    ]
+}

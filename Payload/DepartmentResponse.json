@@ -1,0 +1,46 @@
+[
+    {
+        "ava_departmentcolor": "#ffd9d9",
+        "ava_isassigned": true,
+        "ava_keyholderresponsabilitycode": null,
+        "ava_name": "Planning Details 00019",
+        "ava_planningdetailsid": "388c245c-42c4-ef11-a72f-002248da6ae5",
+        "ava_shiftday": "2024-12-01",
+        "WorkforceId": "eee1fb6f-34c4-ef11-a72f-002248728bcc",
+        "SkillId": "bc66eb9c-31c4-ef11-a72f-002248da8aa2",
+        "DepartmentId": "99c42473-31c4-ef11-a72f-002248da8aa2",
+        "isDeleted": false,
+        "isEdited": true,
+        "isSwap": false,
+        "workforceId": "eee1fb6f-34c4-ef11-a72f-002248728bcc"
+    },
+    {
+        "ava_departmentcolor": "#dcd3e5",
+        "ava_isassigned": true,
+        "ava_keyholderresponsabilitycode": null,
+        "ava_name": "Planning Details 00192",
+        "ava_planningdetailsid": "ec8e245c-42c4-ef11-a72f-002248da6ae5",
+        "ava_shiftday": "2024-12-03",
+        "WorkforceId": "eee1fb6f-34c4-ef11-a72f-002248728bcc",
+        "DepartmentId": "97c42473-31c4-ef11-a72f-002248da8aa2",
+        "isDeleted": false,
+        "isEdited": true,
+        "isSwap": false,
+        "workforceId": "eee1fb6f-34c4-ef11-a72f-002248728bcc"
+    },
+    {
+        "ava_departmentcolor": "#ffd9d9",
+        "ava_isassigned": true,
+        "ava_keyholderresponsabilitycode": null,
+        "ava_name": "Planning Details 00609",
+        "ava_planningdetailsid": "7095245c-42c4-ef11-a72f-002248da6ae5",
+        "ava_shiftday": "2024-12-10",
+        "WorkforceId": "f6e1fb6f-34c4-ef11-a72f-002248728bcc",
+        "SkillId": "bc66eb9c-31c4-ef11-a72f-002248da8aa2",
+        "DepartmentId": "99c42473-31c4-ef11-a72f-002248da8aa2",
+        "isDeleted": false,
+        "isEdited": true,
+        "isSwap": false,
+        "workforceId": "f6e1fb6f-34c4-ef11-a72f-002248728bcc"
+    }
+]
