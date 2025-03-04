@@ -176,24 +176,26 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
   return (
     <div className="modal-overlay" onClick={onClose}>
       {isCreateMode ? (
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
            
-              Add Shift
+          <button className={ "header-btn Selected-btn"} >Add Shift</button>
+
            
           </div>
-          <div className="form-group">
-            <label className="form-label">Staff member</label>
-            <input
+          <div className="modal-body">
+        <div className="form-row">
+                <label>Staff member</label>
+                <input
               type="text"
               value={selectedWorker || ""}
               readOnly
               className="form-control"
             />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Date</label>
-            <input
+            </div>
+            <div className="form-row">
+                <label>Date</label>
+                <input
               type="text"
               value={
                 isCreateMode
@@ -205,10 +207,10 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
               readOnly
               className="form-control"
             />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Department</label>
-            <select
+            </div>
+            <div className="form-row">
+                <label>Department</label>
+                <select
               className="form-select"
               value={selectedDepartment}
               onChange={handleDepartmentChange}
@@ -220,10 +222,10 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                 </option>
               ))}
             </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Skill</label>
-            <select
+            </div>
+            <div className="form-row">
+                <label>Skill</label>
+                <select
               className="form-select"
               value={selectedSkill}
               onChange={(e) => setSelectedSkill(e.target.value)}
@@ -238,13 +240,23 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                 )
               )}
             </select>
-          </div>
-          <div className="modal-footer">
+            </div>
+            <div className="form-row">
+                <label>Time slot</label>
+                <input type="text" value="09:00 AM - 06:00 PM" readOnly />
+            </div>
+            <div className="form-row lunch-break-row">
+                <label>Lunch break</label>
+                <input type="text" readOnly/>
+                <span className="delete-icon">🗑️</span>
+            </div>        
+        </div>
+        <div className="modal-footer">
             <button className="btn btn-cancel" onClick={onClose}>
               Cancel
             </button>
             <button className="btn btn-confirm" onClick={handleConfirmClick}>
-              {isCreateMode ? "Create" : "Update"}
+              Create
             </button>
           </div>
         </div>
