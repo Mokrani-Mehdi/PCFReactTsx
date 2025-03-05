@@ -359,6 +359,42 @@ console.log(anyDeletedShift);
     setIsCreateMode(false);
     setSelectedDate(null);
   };
+  const handleSwapShift = (shift1: Shift, shift2: Shift) => {
+    // Create a copy of workforces to modify
+    const updatedWorkforces = localWorkforceData.workforces.map((workforce) => {
+      // For the worker who originally had shift1
+      if (workforce.ava_name === shift1.workforceId) {
+        workforce.Shifts = workforce.Shifts.map(s => 
+          s.ava_planningdetailsid === shift1.ava_planningdetailsid ? shift2 : s
+        );
+      }
+      
+      // For the worker who originally had shift2
+      if (workforce.ava_name === shift2.workforceId) {
+        workforce.Shifts = workforce.Shifts.map(s => 
+          s.ava_planningdetailsid === shift2.ava_planningdetailsid ? shift1 : s
+        );
+      }
+      
+      return workforce;
+    });
+  
+    // Update local state
+    setLocalWorkforceData({
+      ...localWorkforceData,
+      workforces: updatedWorkforces
+    });
+  
+    // Add to updated shifts for validation
+    setUpdatedShifts(prev => [
+      ...prev.filter(s => 
+        s.ava_planningdetailsid !== shift1.ava_planningdetailsid && 
+        s.ava_planningdetailsid !== shift2.ava_planningdetailsid
+      ),
+      shift1,
+      shift2
+    ]);
+  };
 
   if (!isValidData) {
     return <EmptyStateMessage />;
@@ -548,9 +584,13 @@ console.log(anyDeletedShift);
         departmentData={DepartementData}
         isCreateMode={isCreateMode}
         selectedDate={selectedDate}
+        workforces={localWorkforceData.workforces}
         onClose={handleClosePopup}
         onConfirm={handleShiftUpdate}
         onCreateShift={handleCreateShift}
+        onSwapShift={handleSwapShift}
+        ShiftsDates = {['2025-09-01','2025-09-02','2025-09-03','2025-09-04']}
+        Shifts = {localWorkforceData.workforces}
       />
     </div>
   );
